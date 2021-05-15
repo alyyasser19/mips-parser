@@ -1,3 +1,3 @@
 assign a input.txt
 assign b readFile a
-print b
+print a
