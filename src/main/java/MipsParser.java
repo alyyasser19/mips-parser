@@ -1,22 +1,53 @@
 package main.java;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 public class MipsParser {
-    private Hashtable  memory= new Hashtable();
+    private Hashtable<String,String>  memory= new Hashtable();
 
 
+    public void interpret(String fileName) throws IOException {
+        FileReader fr= new FileReader(fileName);
+        BufferedReader br= new BufferedReader(fr);
+        boolean instruction=false;
+        String currentInstruction;
+        ArrayList variables= new ArrayList();
+        String currentLine;
+        while((currentLine = br.readLine())!= null){
+            String[] line= currentLine.split(" ");
+            for (int i=0; i<line.length ;i++) {
+                System.out.println(line[i]);
+                switch(line[i]) {
+                        case "print":
+                        print(line[i++]);
+                        break;
+                        case "assign":
+                        assign(line[i+1],line[i+2]);
+                        i+=2;
+                        break;
+                        case "add":
+                        add(line[i+1],line[i+2]);
+                        i+=2;
+                        break;
+                        case "writeFile":
+                        writeFile(line[i+1],line[i+2]);
+                        i+=2;
+                        break;
+                        case "readFile":
+                        readFile(line[i++]);
+                        break;
+default:
+        continue;
+        }
+        }
 
-    public void interpret(){
+    }}
 
-    }
     public String readFile(String fileName) throws IOException {
         // src/main/programs/Program 1.txt
         String file = fileName;
@@ -38,19 +69,29 @@ public class MipsParser {
         fr.close();
     }
 
-    public void assign(String var, Object val){
+    public void assign(String var, String val){
         memory.put(var, val);
     }
 
-    public void add(double var1, double var2){
-        double val1= (double) memory.get(var1);
-        double val2= (double) memory.get(var2);
+    public void add(String var1, String var2){
+        double val1=  Double.parseDouble(memory.get(var1));
+        double val2=  Double.parseDouble(memory.get(var2));
         double sum= val1+val2;
-        memory.put(var1, sum);
+        memory.put(var1, String.valueOf(sum));
     }
 
     public void print(Object var){
         System.out.println(memory.get(var));
     }
 
+
+    public static void main(String[]args){
+        MipsParser parser= new MipsParser();
+        try {
+            parser.interpret("src/main/programs/Program 2.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
+
