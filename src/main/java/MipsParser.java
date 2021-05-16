@@ -54,8 +54,12 @@ public class MipsParser {
     }}
 
     public String readFile(String fileName) throws IOException {
-        // src/main/programs/Program 1.txt
-        String file = memory.get(fileName);
+        String variable;
+        if(memory.get(fileName)!=null)
+            variable=memory.get(fileName);
+        else
+            variable=fileName;
+        String file = variable;
         Path path = Paths.get(file);
         BufferedReader bufferedReader = Files.newBufferedReader(path);
         String text="";
@@ -67,8 +71,14 @@ public class MipsParser {
         return text;
     }
     public void writeFile(String fileName, String input) throws IOException {
-        FileWriter fr = new FileWriter(memory.get(fileName),true);
+        String variable;
+        if(memory.get(fileName)!=null)
+            variable=memory.get(fileName);
+        else
+            variable=fileName;
+        FileWriter fr = new FileWriter(variable,true);
         BufferedWriter br = new BufferedWriter(fr);
+        br.write("\n");
         br.write(memory.get(input));
         br.close();
         fr.close();
@@ -81,7 +91,11 @@ public class MipsParser {
 
     public void add(String var1, String var2){
         double val1=  Double.parseDouble(memory.get(var1));
-        double val2=  Double.parseDouble(memory.get(var2));
+        double val2;
+        if(memory.get(var2)!=null)
+            val2=  Double.parseDouble(memory.get(var2));
+        else
+            val2= Double.parseDouble(var2);
         double sum= val1+val2;
         memory.put(var1, String.valueOf(sum));
         System.out.println("content of"+" "+var1+" "+"is:"+"  "+memory.get(var1));
@@ -104,9 +118,9 @@ public class MipsParser {
 
     public static void main(String[]args) {
         MipsParser parser = new MipsParser();
+        //use the interpreter to read any program
         try {
-            parser.interpret("src/main/programs/Program 3.txt");
-//            parser.readFile("input.txt");
+            parser.interpret("src/main/programs/Program 2.txt");
         } catch (IOException e) {
             e.printStackTrace();
         }
