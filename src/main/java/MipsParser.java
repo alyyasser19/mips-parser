@@ -78,8 +78,8 @@ public class MipsParser {
             variable=fileName;
         FileWriter fr = new FileWriter(variable,true);
         BufferedWriter br = new BufferedWriter(fr);
-        br.write("\n");
         br.write(memory.get(input));
+        br.write("\n");
         br.close();
         fr.close();
     }
