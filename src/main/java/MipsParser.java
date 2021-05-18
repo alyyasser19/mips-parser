@@ -4,7 +4,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Scanner;
 
@@ -54,6 +53,8 @@ public class MipsParser {
     }}
 
     public String readFile(String fileName) throws IOException {
+        String text="";
+        try{
         String variable;
         if(memory.get(fileName)!=null)
             variable=memory.get(fileName);
@@ -62,15 +63,18 @@ public class MipsParser {
         String file = variable;
         Path path = Paths.get(file);
         BufferedReader bufferedReader = Files.newBufferedReader(path);
-        String text="";
         String curLine;
         while ((curLine = bufferedReader.readLine()) != null){
             text+=curLine+"\n";
         }
-        bufferedReader.close();
+        bufferedReader.close();}
+        catch(IOException e){
+            System.out.println("Please Enter a Valid Location");
+        }
         return text;
     }
     public void writeFile(String fileName, String input) throws IOException {
+        try{
         String variable;
         if(memory.get(fileName)!=null)
             variable=memory.get(fileName);
@@ -81,7 +85,10 @@ public class MipsParser {
         br.write(memory.get(input));
         br.write("\n");
         br.close();
-        fr.close();
+        fr.close();}
+        catch(IOException e){
+            System.out.println("Please Enter a Valid Location");
+        }
     }
 
     public void assign(String var, String val){
@@ -90,15 +97,25 @@ public class MipsParser {
     }
 
     public void add(String var1, String var2){
-        double val1=  Double.parseDouble(memory.get(var1));
+        double val1;
         double val2;
-        if(memory.get(var2)!=null)
-            val2=  Double.parseDouble(memory.get(var2));
-        else
-            val2= Double.parseDouble(var2);
-        double sum= val1+val2;
-        memory.put(var1, String.valueOf(sum));
-        System.out.println("content of"+" "+var1+" "+"is:"+"  "+memory.get(var1));
+        try {
+            if (memory.get(var1) != null)
+                val1 = Double.parseDouble(memory.get(var1));
+            else{
+                System.out.println("Variable Does Not Exist");
+                return;}
+            if (memory.get(var2) != null)
+                val2 = Double.parseDouble(memory.get(var2));
+            else
+                val2 = Double.parseDouble(var2);
+            double sum = val1 + val2;
+            memory.put(var1, String.valueOf(sum));
+            System.out.println("content of" + " " + var1 + " " + "is:" + "  " + memory.get(var1));
+        }
+        catch(Exception e){
+            System.out.println("Invalid Datatype");
+        }
     }
 
     public void print(Object var){
@@ -120,7 +137,7 @@ public class MipsParser {
         MipsParser parser = new MipsParser();
         //use the interpreter to read any program
         try {
-            parser.interpret("src/main/programs/Program 2.txt");
+            parser.interpret("src/main/programs/Program 3.txt");
         } catch (IOException e) {
             e.printStackTrace();
         }
