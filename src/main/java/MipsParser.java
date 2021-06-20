@@ -8,7 +8,7 @@ import java.util.Hashtable;
 import java.util.Scanner;
 
 public class MipsParser {
-    private Hashtable<String,String>  memory= new Hashtable();
+    private Word[] memory= new Word[128];
 
 
     public void interpret(String fileName) throws IOException {
