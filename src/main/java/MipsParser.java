@@ -1,4 +1,4 @@
-package main.java;
+/*package main.java;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -143,5 +143,5 @@ public class MipsParser {
         }
     }
 
-}
+}*/
 
