@@ -21,4 +21,11 @@ public class Word {
         Value = value;
     }
 
+    @Override
+    public String toString() {
+        return "Word{" +
+                "Key='" + Key + '\'' +
+                ", Value=" + Value +
+                '}';
+    }
 }

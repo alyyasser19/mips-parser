@@ -1,13 +1,15 @@
 package main.java;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class Parser {
     public Word[] memory= new Word[38];
     private static int processCounter=1;
+    int curProgram= 1; //update it MAAAN
 
     public void fillMemory(String parentDirctory) throws IOException {
         String program= parentDirctory+"/Program 1.txt";
@@ -40,18 +42,143 @@ public class Parser {
             offset+=curProcess.getInstructions().length+8;
             processCounter++;
             program= parentDirctory+"/Program "+ processCounter+".txt";
-            System.out.println(program);
             programFile= new File(program);
         }
         processCounter-=1;
     }
 
+    public int getStart(int pid){
+        int curProgram= 1;
+        for(Word word : memory){
+            if(word.getKey().equals("pid")){
+                curProgram= (int) word.getValue();
+            }
+            if(word.getKey().equals("start") && curProgram==pid)
+                return (int) word.getValue();
+        }
+        return -1;
+    }
+
+    public int getEnd(int pid){
+        int curProgram= 1;
+        for(Word word : memory){
+            if(word.getKey().equals("pid"))
+                curProgram= (int) word.getValue();
+            if(word.getKey().equals("end") && curProgram==pid)
+                return (int) word.getValue();
+        }
+        return -1;
+    }
+
+    public boolean getState(int pid){
+        int curProgram= 1;
+        for(Word word : memory){
+            if(word.getKey().equals("pid"))
+                curProgram= (int) word.getValue();
+            if(word.getKey().equals("state") && curProgram==pid)
+                return (boolean) word.getValue();
+        }
+        return false;
+    }
+
+    public int getCurOffset(int pid){
+        int curProgram= 1;
+        for(Word word : memory){
+            if(word.getKey().equals("pid"))
+                curProgram= (int) word.getValue();
+            if(word.getKey().equals("curOffset") && curProgram==pid)
+                return (int) word.getValue();
+        }
+        return -1;
+    }
+
+    public int getPc(int pid){
+        int curProgram= 1;
+        for(Word word : memory){
+            if(word.getKey().equals("pid"))
+                curProgram= (int) word.getValue();
+            if(word.getKey().equals("pc") && curProgram==pid)
+                return (int) word.getValue();
+        }
+        return -1;
+    }
+
+    public Object getVariable(int pid, String variable){
+        int curProgram= 1;
+        for(Word word : memory){
+            if(word.getKey().equals("pid"))
+                curProgram= (int) word.getValue();
+            if(word.getKey().equals("variables") && curProgram==pid)
+                for(Word var : (Word[])word.getValue())
+                    if(var.getKey().equals(variable))
+                        return var.getValue();
+        }
+        return null;
+    }
+
+    public void setState(int pid, boolean state){
+        int curProgram= 1;
+        for(Word word : memory){
+            if(word.getKey().equals("pid"))
+                curProgram= (int) word.getValue();
+            if(word.getKey().equals("state") && curProgram==pid)
+                word.setValue(state);
+        }
+    }
+
+    public void setPc(int pid, int state){
+        int curProgram= 1;
+        for(Word word : memory){
+            if(word.getKey().equals("pid"))
+                curProgram= (int) word.getValue();
+            if(word.getKey().equals("pc") && curProgram==pid)
+                word.setValue(state);
+        }
+    }
+
+    public void setCurOffset(int pid, int state){
+        int curProgram= 1;
+        for(Word word : memory){
+            if(word.getKey().equals("pid"))
+                curProgram= (int) word.getValue();
+            if(word.getKey().equals("curOffset") && curProgram==pid)
+                word.setValue(state);
+        }
+    }
+
+    public void setVariable(int pid,String variable ,Object state){
+        int curProgram= 1;
+        int variables= 0;
+        for(Word word : memory){
+            if(word.getKey().equals("pid"))
+                curProgram= (int) word.getValue();
+            if(word.getKey().equals("variables") && curProgram==pid){
+                for(Word var : (Word[])word.getValue()) {
+                    if(var==null)
+                        continue;
+
+                    if(var!=null)
+                        variables++;
+                    if (var.getKey().equals(variable)) {
+                        var.setValue(state);
+                        return;
+                    }
+                }
+                Word newWord= new Word(variable,state);
+                ((Word[])word.getValue())[variables]=newWord;
+            }
+        }
+    }
+
+
+
+
     public String readFile(String fileName) throws IOException {
         String text="";
         try{
             String variable;
-            if(memory.get(fileName)!=null)
-                variable=memory.get(fileName);
+            if(getVariable(curProgram,fileName)!=null)
+                variable= (String) getVariable(curProgram,fileName);
             else
                 variable=fileName;
             String file = variable;
@@ -70,13 +197,13 @@ public class Parser {
     public void writeFile(String fileName, String input) throws IOException {
         try{
             String variable;
-            if(memory.get(fileName)!=null)
-                variable=memory.get(fileName);
+            if(getVariable(curProgram,fileName)!=null)
+                variable= (String) getVariable(curProgram,fileName);
             else
                 variable=fileName;
             FileWriter fr = new FileWriter(variable,true);
             BufferedWriter br = new BufferedWriter(fr);
-            br.write(memory.get(input));
+            br.write((String) getVariable(curProgram,input));
             br.write("\n");
             br.close();
             fr.close();}
@@ -86,26 +213,26 @@ public class Parser {
     }
 
     public void assign(String var, String val){
-        memory.put(var, val);
-        System.out.println("content of"+" "+var+" "+"is:"+"  "+memory.get(var));
+        setVariable(curProgram,var,val);
+        System.out.println("content of"+" "+var+" "+"is:"+"  "+getVariable(curProgram,val));
     }
 
     public void add(String var1, String var2){
         double val1;
         double val2;
         try {
-            if (memory.get(var1) != null)
-                val1 = Double.parseDouble(memory.get(var1));
+            if (getVariable(curProgram,var1) != null)
+                val1 = Double.parseDouble((String) getVariable(curProgram,var1));
             else{
                 System.out.println("Variable Does Not Exist");
                 return;}
-            if (memory.get(var2) != null)
-                val2 = Double.parseDouble(memory.get(var2));
+            if (getVariable(curProgram,var2) != null)
+                val2 = Double.parseDouble((String) getVariable(curProgram,var2));
             else
                 val2 = Double.parseDouble(var2);
             double sum = val1 + val2;
-            memory.put(var1, String.valueOf(sum));
-            System.out.println("content of" + " " + var1 + " " + "is:" + "  " + memory.get(var1));
+            setVariable(curProgram,var1,sum);
+            System.out.println("content of" + " " + var1 + " " + "is:" + "  " + getVariable(curProgram,var1));
         }
         catch(Exception e){
             System.out.println("Invalid Datatype");
@@ -113,10 +240,10 @@ public class Parser {
     }
 
     public void print(Object var){
-        if(memory.get(var)==null)
+        if(getVariable(curProgram, (String) var)==null)
             System.out.println(var);
         else{
-            System.out.println(memory.get(var));
+            System.out.println(getVariable(curProgram, (String) var));
         }
     }
 
