@@ -4,12 +4,81 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Scanner;
 
 public class Parser {
     public Word[] memory= new Word[38];
-    private static int processCounter=1;
-    int curProgram= 1; //update it MAAAN
+    public static int processCounter=1;
+    int curProgram= 1;
+
+    public void schedule(){
+        Queue programQueue= new LinkedList<>();
+        //Queue programs
+        int exe=0;
+        for(int i=1; i<=processCounter; i++){
+            programQueue.add(i);
+        }
+        // to Dynamically get the first program in the queue
+        programQueue.remove(curProgram);
+        programQueue.add(curProgram);
+        System.out.println("Current Program: "+curProgram);
+        while(!programQueue.isEmpty()){
+            int quantas= 0;
+            int start= getStart(curProgram)+getCurOffset(curProgram);
+            int end= getEnd(curProgram);
+
+            if(start!=end){
+                setState(curProgram,true);
+                System.out.println("Current Instruction: "+ memory[start].getValue());
+                execute((String) memory[start].getValue());
+                quantas++;
+                setCurOffset(curProgram,getCurOffset(curProgram)+1);
+                exe++;
+                System.out.println("Executed: "+exe+" Instructions");
+                setPc(curProgram,getPc(curProgram)+1);
+            }
+            if(start==end){
+                System.out.println("Program "+curProgram+" is done.");
+                System.out.println("Number of Quantas for program "+curProgram+" is: " +quantas);
+                setState(curProgram,false);
+                curProgram= (int) programQueue.remove();
+            }
+            start= getStart(curProgram)+getCurOffset(curProgram);
+
+
+            if(start!=end){
+                setState(curProgram,true);
+                System.out.println("Current Instruction: "+ memory[start].getValue());
+                execute((String) memory[start].getValue());
+                quantas++;
+                setCurOffset(curProgram,getCurOffset(curProgram)+1);
+                exe++;
+                System.out.println("Executed: "+exe+" Instructions");
+                setPc(curProgram,getPc(curProgram)+1);
+            }
+
+            if(start==end){
+                System.out.println("Program "+curProgram+" is done.");
+                System.out.println("Number of Quantas for program "+curProgram+" is: " +quantas);
+            }
+            setState(curProgram,false);
+            int prevProgram=curProgram;
+            System.out.println("Number of Quantas for program "+curProgram+" is: " +quantas);
+            curProgram= (int) programQueue.remove();
+            System.out.println("Current Program: "+curProgram);
+
+            start= getStart(curProgram)+getCurOffset(curProgram);
+            end= getEnd(curProgram);
+
+            if(start!=end){
+                System.out.println("added " + prevProgram+" back to the queue");
+                programQueue.add(prevProgram);
+            }
+
+        }
+    }
 
     public void fillMemory(String parentDirctory) throws IOException {
         String program= parentDirctory+"/Program 1.txt";
@@ -177,8 +246,10 @@ public class Parser {
         String text="";
         try{
             String variable;
-            if(getVariable(curProgram,fileName)!=null)
-                variable= (String) getVariable(curProgram,fileName);
+            if(getVariable(curProgram,fileName)!=null) {
+                System.out.println("read from"+" "+fileName+" "+"::"+"  "+getVariable(curProgram,fileName));
+                variable = (String) getVariable(curProgram, fileName);
+            }
             else
                 variable=fileName;
             String file = variable;
@@ -214,7 +285,7 @@ public class Parser {
 
     public void assign(String var, String val){
         setVariable(curProgram,var,val);
-        System.out.println("content of"+" "+var+" "+"is:"+"  "+getVariable(curProgram,val));
+        System.out.println("content of"+" "+var+" "+"is:"+"  "+getVariable(curProgram,var));
     }
 
     public void add(String var1, String var2){
@@ -240,10 +311,11 @@ public class Parser {
     }
 
     public void print(Object var){
-        if(getVariable(curProgram, (String) var)==null)
+        try{
+            System.out.println("Printed: "+getVariable(curProgram, (String) var) +"\n"+ "from: " +var);
+}
+        catch(NullPointerException e){
             System.out.println(var);
-        else{
-            System.out.println(getVariable(curProgram, (String) var));
         }
     }
 
@@ -252,5 +324,54 @@ public class Parser {
         System.out.println("input?");
         String input = sc.nextLine();
         return input;
+    }
+
+    public void execute(String instuction){
+        String[] line= instuction.split(" ");
+
+        for (int i=0; i<line.length ;i++) {
+            switch(line[i]) {
+                case "print":
+                    print(line[++i]);
+                    break;
+                case "assign":
+                    if(line[i+2].equals("input"))
+                        assign(line[i+1],input());
+                    else if(line[i+2].equals("readFile")){
+                        try {
+                            assign(line[i+1],readFile(line[i+3]));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        i+=3;
+                        continue;
+                    }
+                    else
+                        assign(line[i+1],line[i+2]);
+                    i+=2;
+                    break;
+                case "add":
+                    add(line[i+1],line[i+2]);
+                    i+=2;
+                    break;
+                case "writeFile":
+                    try {
+                        writeFile(line[i+1],line[i+2]);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    i+=2;
+                    break;
+                case "readFile":
+                    try {
+                        readFile(line[++i]);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                default:
+                    continue;
+            }
+    }
     }
 }
