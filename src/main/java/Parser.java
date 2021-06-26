@@ -23,56 +23,73 @@ public class Parser {
         // to Dynamically get the first program in the queue
         programQueue.remove(curProgram);
         programQueue.add(curProgram);
-        System.out.println("Current Program: "+curProgram);
         while(!programQueue.isEmpty()){
+
             int quantas= 0;
             int start= getStart(curProgram)+getCurOffset(curProgram);
             int end= getEnd(curProgram);
-
+            if(start==end){
+                curProgram= (int) programQueue.remove();
+                continue;
+            }
+            System.out.println("\n"+"Current Program: "+curProgram+"\n");
             if(start!=end){
                 setState(curProgram,true);
-                System.out.println("Current Instruction: "+ memory[start].getValue());
                 execute((String) memory[start].getValue());
                 quantas++;
                 setCurOffset(curProgram,getCurOffset(curProgram)+1);
                 exe++;
-                System.out.println("Executed: "+exe+" Instructions");
                 setPc(curProgram,getPc(curProgram)+1);
+                System.out.println("Current Instruction: "+ memory[start].getValue());
             }
             if(start==end){
-                System.out.println("Program "+curProgram+" is done.");
-                System.out.println("Number of Quantas for program "+curProgram+" is: " +quantas);
+                System.out.println("\n"+"Number of Quantas for program "+curProgram+" is: " +quantas+"\n");
+                System.out.println("\n"+"Program "+curProgram+" is done."+"\n");
                 setState(curProgram,false);
                 curProgram= (int) programQueue.remove();
+                System.out.println("\n"+"Executed: "+exe+" Instructions"+"\n");
+                continue;
             }
             start= getStart(curProgram)+getCurOffset(curProgram);
 
 
             if(start!=end){
                 setState(curProgram,true);
-                System.out.println("Current Instruction: "+ memory[start].getValue());
                 execute((String) memory[start].getValue());
                 quantas++;
                 setCurOffset(curProgram,getCurOffset(curProgram)+1);
                 exe++;
-                System.out.println("Executed: "+exe+" Instructions");
                 setPc(curProgram,getPc(curProgram)+1);
+                System.out.println("Current Instruction: "+ memory[start].getValue());
+                System.out.println("\n"+"Executed: "+exe+" Instructions"+"\n");
             }
 
             if(start==end){
                 System.out.println("Program "+curProgram+" is done.");
-                System.out.println("Number of Quantas for program "+curProgram+" is: " +quantas);
             }
+            System.out.println("Number of Quantas for program "+curProgram+" is: " +quantas);
             setState(curProgram,false);
             int prevProgram=curProgram;
-            System.out.println("Number of Quantas for program "+curProgram+" is: " +quantas);
             curProgram= (int) programQueue.remove();
-            System.out.println("Current Program: "+curProgram);
-
+            int oldStart;
+            int oldEnd;
+            if(programQueue.size()!=1 ||programQueue.size()!=0) {
+                 oldStart = 1;
+                 oldEnd = 0;
+            }else {
+                 oldStart = start;
+                 oldEnd = end;
+            }
             start= getStart(curProgram)+getCurOffset(curProgram);
             end= getEnd(curProgram);
-
+            if(programQueue.size()==0){
+                return;
+            }
             if(start!=end){
+                programQueue.add(curProgram);
+            }
+
+            if(oldStart!=oldEnd){
                 System.out.println("added " + prevProgram+" back to the queue");
                 programQueue.add(prevProgram);
             }
@@ -112,6 +129,7 @@ public class Parser {
             processCounter++;
             program= parentDirctory+"/Program "+ processCounter+".txt";
             programFile= new File(program);
+            printPCB((Integer) pid.getValue());
         }
         processCounter-=1;
     }
@@ -373,5 +391,64 @@ public class Parser {
                     continue;
             }
     }
+    }
+    public void printMemory(){
+        System.out.println("\n"+"memory Content:"+"\n"+"-----------------------------------");
+        int currentProgram = 0;
+        int j=0;
+        for(Word word : memory){
+            if(word.getKey().equals("pid")){
+                currentProgram= (int) word.getValue();
+            }
+
+            if(word.getKey().equals("variables")){
+                System.out.println("\n"+"Variables for program :"+ currentProgram+"\n"+"------------------------------------");
+                int i=0;
+                for(Word cur: (Word[])word.getValue()){
+                    try{
+                        System.out.println("Variable "+ cur.getKey()+" at position "+j+"."+i+": "+cur.getValue());
+                    }
+                    catch (NullPointerException e){
+                        break;
+                    }
+                    i++;
+                }
+                continue;
+            }
+
+            System.out.println("\n"+"at position: "+j+"\n");
+            System.out.println("type: "+word.getKey());
+            System.out.println("value: "+word.getValue());
+            j++;
+        }
+    }
+
+    public void printPCB(int pid){
+        System.out.println("\n"+"PCB for program: "+pid+" "+"\n"+"-----------------------------------");
+        int currentProgram = 0;
+
+        for(Word word : memory){
+            try{
+            if(word.getKey().equals("pid")){
+                currentProgram= (int) word.getValue();
+            }
+            if(currentProgram != pid){
+                continue;
+            }
+            if(word.getKey().equals("variables")){
+                continue;
+            }
+
+            if(word.getKey().contains("instruction")){
+                continue;
+            }
+            }
+            catch(NullPointerException e){
+                continue;
+            }
+            System.out.println("\n");
+            System.out.println("type: "+word.getKey());
+            System.out.println("value: "+word.getValue());
+        }
     }
 }

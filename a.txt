@@ -1,6 +1,17 @@
 hello world
 HELLO
 lol
-
 a.txt
 a.txt
+hello
+20
+a.txt
+40
+20
+a.txt
+30
+2
+20
+2
+20
+20
