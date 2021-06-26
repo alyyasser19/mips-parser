@@ -28,6 +28,10 @@ public class Parser {
             int quantas= 0;
             int start= getStart(curProgram)+getCurOffset(curProgram);
             int end= getEnd(curProgram);
+            if(getPc(curProgram)==getProcessSize() && curProgram==processCounter){
+                System.out.println("Program "+curProgram+" is done.");
+                return;
+            }
             if(start==end){
                 curProgram= (int) programQueue.remove();
                 continue;
@@ -43,7 +47,7 @@ public class Parser {
                 System.out.println("Current Instruction: "+ memory[start].getValue());
             }
             if(start==end){
-                System.out.println("\n"+"Number of Quantas for program "+curProgram+" is: " +quantas+"\n");
+                System.out.println("\n"+"Number of Quanta for program "+curProgram+" is: " +quantas+"\n");
                 System.out.println("\n"+"Program "+curProgram+" is done."+"\n");
                 setState(curProgram,false);
                 curProgram= (int) programQueue.remove();
@@ -67,7 +71,8 @@ public class Parser {
             if(start==end){
                 System.out.println("Program "+curProgram+" is done.");
             }
-            System.out.println("Number of Quantas for program "+curProgram+" is: " +quantas);
+            System.out.println("Number of Quanta for program "+curProgram+" is: " +quantas);
+
             setState(curProgram,false);
             int prevProgram=curProgram;
             curProgram= (int) programQueue.remove();
@@ -80,6 +85,7 @@ public class Parser {
                  oldStart = start;
                  oldEnd = end;
             }
+
             start= getStart(curProgram)+getCurOffset(curProgram);
             end= getEnd(curProgram);
             if(programQueue.size()==0){
@@ -450,5 +456,31 @@ public class Parser {
             System.out.println("type: "+word.getKey());
             System.out.println("value: "+word.getValue());
         }
+    }
+
+    public int getProcessSize(){
+        int i=0;
+        int currentProgram=0;
+        for(Word word : memory){
+            try{
+                if(word.getKey().equals("pid")){
+                    currentProgram= (int) word.getValue();
+                }
+                if(currentProgram != processCounter){
+                    continue;
+                }
+                if(word.getKey().equals("variables")){
+                    continue;
+                }
+
+                if(word.getKey().contains("instruction")){
+                    i++;
+                }
+            }
+            catch(NullPointerException e){
+                continue;
+            }
+        }
+        return i;
     }
 }
